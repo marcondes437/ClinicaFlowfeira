@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const source = path.join(root, '.local');
+if (!fs.existsSync(path.join(source, 'postgres/PG_VERSION'))) throw new Error('Crie o banco primeiro com npm run db:setup.');
+if (fs.existsSync(path.join(source, 'postgres/postmaster.pid'))) throw new Error('Encerre o sistema e o banco com Ctrl+C antes do backup. Se o computador desligou abruptamente, abra e encerre o sistema normalmente antes de copiar.');
+const directory = path.join(root, 'backups'); fs.mkdirSync(directory, { recursive: true });
+const target = path.join(directory, `clinicaflow-${new Date().toISOString().replace(/[:.]/g, '-')}`);
+fs.cpSync(source, target, { recursive: true, force: false, errorOnExist: true });
+console.log('Cópia completa do banco e configuração salva: ' + target);

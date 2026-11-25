@@ -1,0 +1,40 @@
+{
+  "name": "clinicaflow",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/local-db.mjs dev",
+    "build": "next build",
+    "start": "node scripts/local-db.mjs start",
+    "db:setup": "node scripts/local-db.mjs setup",
+    "db:start": "node scripts/local-db.mjs serve",
+    "test:local": "node scripts/local-db.mjs test",
+    "test:offline": "node scripts/test-offline.cjs",
+    "db:senha": "node scripts/local-password.mjs",
+    "db:backup": "node scripts/local-backup.mjs",
+    "lint": "tsc --noEmit -p tsconfig.check.json",
+    "test": "node --test scripts/test-unit.cjs scripts/test-assistant.cjs",
+    "test:unit": "node --test scripts/test-unit.cjs",
+    "test:db": "node scripts/test-db.cjs",
+    "test:responsivo": "node scripts/test-responsivo.cjs",
+    "check": "npm run lint && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
+    "embedded-postgres": "17.12.0-beta.19",
+    "next": "15.5.25",
+    "pg": "^8.23.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "recharts": "^2.13.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "puppeteer-core": "^23.11.1",
+    "typescript": "^5.7.3"
+  }
+}

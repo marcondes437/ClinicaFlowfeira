@@ -1,0 +1,51 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const pg = require('pg');
+const ts = require('typescript');
+const root = path.resolve(__dirname, '..');
+const config = JSON.parse(fs.readFileSync(path.join(root, '.local/database.json'), 'utf8'));
+const database = 'clinicaflow_offline_test';
+const result = spawnSync(process.execPath, ['scripts/test-db.cjs'], { cwd: root, stdio: 'inherit', windowsHide: true, env: { ...process.env, PGHOST: config.host, PGPORT: String(config.port), PGUSER: config.user, PGPASSWORD: config.password, TEST_DB: database } });
+if (result.status !== 0) { console.error(result.error || 'Testes SQL falharam'); process.exit(1); }
+require.extensions['.ts'] = (module, file) => module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText, file);
+const testPool = new pg.Pool({ ...config, database });
+globalThis.clinicaflowPool = testPool;
+const { execute, asUser } = require('../src/lib/local/database.ts');
+const { passwordHash, passwordMatches, createSession, sessionUser, tokenHash } = require('../src/lib/local/session.ts');
+const { localClient } = require('../src/lib/local/protocol.ts');
+async function main() {
+  await testPool.query(fs.readFileSync(path.join(root, 'local/auth.sql'), 'utf8'));
+  const hash = await passwordHash('TesteLocal2026');
+  assert(await passwordMatches('TesteLocal2026', hash)); assert.equal(await passwordMatches('incorreta', hash), false);
+  const { rows: [user] } = await testPool.query("insert into auth.users(email,password_hash,raw_user_meta_data) values('adapter@teste.local',$1,'{\"nome\":\"Paciente Adapter\"}') returning id,email", [hash]);
+  const token = await createSession(user.id);
+  assert.equal((await sessionUser(token)).id, user.id); assert.equal(await sessionUser('a'.repeat(64)), null);
+  assert.equal((await testPool.query('select token_hash from auth.local_sessions where user_id=$1', [user.id])).rows[0].token_hash, tokenHash(token));
+  const patient = localClient(op => execute(user, op), {});
+  const anon = localClient(op => execute(null, op), {});
+  const { rows: [admin] } = await testPool.query("insert into auth.users(email,raw_user_meta_data) values('adapter-admin@teste.local','{\"nome\":\"Admin Adapter\"}') returning id,email");
+  await testPool.query("insert into public.user_roles(user_id,role) values($1,'admin')", [admin.id]);
+  const client = localClient(op => execute(admin, op), {});
+  const specialties = await anon.from('especialidades').select('id,nome').eq('status', 'ativo').order('nome');
+  assert.equal(specialties.error, null); assert(specialties.data.length);
+  const own = await patient.from('pacientes').select('id,nome_completo,pacientes_dados_sensiveis(cpf,cidade)').eq('user_id', user.id).single();
+  assert.equal(own.error, null); assert.equal(own.data.nome_completo, 'Paciente Adapter'); assert.equal(own.data.pacientes_dados_sensiveis, null);
+  const privateRows = await anon.from('pacientes').select('id'); assert.equal(privateRows.data.length, 0);
+  const denied = await patient.from('especialidades').insert({ nome: 'Sem permissão' }).select('id'); assert(denied.error);
+  const created = await client.from('especialidades').insert({ nome: 'Adapter Local' }).select('id').single(); assert.equal(created.error, null); assert(created.data.id);
+  const updated = await client.from('especialidades').update({ descricao: 'Atualização local' }).eq('id', created.data.id).select('id,descricao').single(); assert.equal(updated.error, null); assert.equal(updated.data.descricao, 'Atualização local');
+  const filtered = await client.from('especialidades').select('id').ilike('nome', '%Adapter%').in('status', ['ativo']).not('descricao', 'is', null).range(0, 0); assert.equal(filtered.error, null); assert.equal(filtered.data.length, 1);
+  const count = await client.from('pacientes').select('id', { count: 'exact', head: true }); assert.equal(count.error, null); assert(count.count > 0);
+  const forbidden = await execute(user, { table: 'auth.users' }); assert(forbidden.error);
+  const injection = await execute(user, { table: 'pacientes', columns: 'id; drop table pacientes' }); assert(injection.error);
+  const isolated = await Promise.all([asUser(user, async db => (await db.query('select auth.uid() as id')).rows[0].id), asUser(admin, async db => (await db.query('select auth.uid() as id')).rows[0].id)]); assert.deepEqual(isolated, [user.id, admin.id]);
+  let cpf = '472183650';
+  for (let weight = 10; weight <= 11; weight++) { let sum = 0; for (let i = 0; i < cpf.length; i++) sum += Number(cpf[i]) * (weight - i); const digit = 11 - sum % 11; cpf += digit >= 10 ? '0' : String(digit); }
+  const save = await patient.rpc('salvar_meus_dados', { _celular: '11987654321', _data_nascimento: '1990-01-01', _cpf: cpf }); assert.equal(save.error, null);
+  const sensitive = await patient.from('pacientes_dados_sensiveis').select('cpf').eq('paciente_id', own.data.id).single(); assert.equal(sensitive.error, null); assert.equal(sensitive.data.cpf, cpf);
+  const expired = await testPool.query("update auth.local_sessions set expires_at=now()-interval '1 second' where user_id=$1", [user.id]); assert.equal(expired.rowCount, 1); assert.equal(await sessionUser(token), null);
+  console.log('OK: autenticação, hashes, sessões, persistência, RLS, isolamento entre usuários, consultas, relações, filtros, escrita, RPC e bloqueio de SQL inválido.');
+}
+main().catch(e => { console.error(e); process.exitCode = 1; }).finally(() => testPool.end());

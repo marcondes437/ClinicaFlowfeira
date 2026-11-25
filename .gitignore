@@ -1,0 +1,14 @@
+node_modules
+.local/
+backups/
+.next
+.next-dev
+.env
+.env.local
+.env.*
+!.env.example
+.contas-teste.local.json
+next-env.d.ts
+tsconfig.tsbuildinfo
+*.log
+supabase/.temp/

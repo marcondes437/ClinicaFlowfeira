@@ -1,0 +1,28 @@
+.form { display: grid; gap: 1rem; }
+.full { grid-column: 1 / -1; }
+
+.grupo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 1rem;
+  margin: 0;
+  padding: 1.1rem 1.2rem 0.3rem;
+  border: 1px solid var(--cx-line);
+  border-radius: 12px;
+}
+
+.grupo legend {
+  padding: 0 0.4rem;
+  color: var(--cx-teal-700);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.privacidade { margin: 0; color: var(--cx-muted); font-size: 0.85rem; }
+.footer { display: flex; gap: 0.7rem; }
+
+@media (max-width: 640px) {
+  .footer button { width: 100%; }
+}

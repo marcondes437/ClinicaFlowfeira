@@ -1,0 +1,119 @@
+.shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+.sidebar {
+  background: linear-gradient(180deg, var(--cx-teal-900), #08414f);
+  color: #cfe6ea; padding: 1.4rem 1rem; display: flex; flex-direction: column; gap: 1.4rem;
+  position: sticky; top: 0; height: 100vh;
+}
+.brand { display: flex; align-items: center; gap: 0.6rem; color: #fff; font-weight: 800; }
+.brandMark { width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,0.16); display: grid; place-items: center; }
+.brandLogo { width: 34px; height: 34px; object-fit: contain; }
+.roleTag {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  background: rgba(255,255,255,0.12); padding: 0.25rem 0.6rem; border-radius: 999px; align-self: flex-start;
+}
+.nav { display: grid; gap: 0.25rem; }
+.navLink {
+  padding: 0.6rem 0.75rem; border-radius: 10px; font-size: 0.92rem;
+  color: #cfe6ea; transition: background 0.15s ease, color 0.15s ease;
+}
+.navLink:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.navLink:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.navLinkAtivo, .navLinkAtivo:hover { background: rgba(255,255,255,0.18); color: #fff; font-weight: 700; box-shadow: inset 3px 0 0 #7fd6df; }
+.spacer { flex: 1; }
+.userBox { border-top: 1px solid rgba(255,255,255,0.12); padding-top: 1rem; font-size: 0.85rem; }
+.userBox strong { display: block; color: #fff; }
+
+.main { display: flex; flex-direction: column; min-width: 0; }
+.topbar {
+  background: #fff; border-bottom: 1px solid var(--cx-line);
+  padding: 1.1rem 1.8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.topbar h1 { font-size: 1.25rem; margin: 0; color: var(--cx-teal-900); }
+.topbar p { margin: 0; font-size: 0.88rem; color: var(--cx-muted); }
+.content { padding: 1.8rem; }
+
+/* Patient portal: a lighter, appointment-first layout. */
+.paciente { display: block; min-height: 100dvh; background: radial-gradient(circle at 0 0, #e7f8fa 0, transparent 24%), radial-gradient(circle at 100% 0, #fff4df 0, transparent 22%), #f8fbfb; }
+.paciente .sidebar { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 1.25rem; width: 100%; height: auto; min-height: 78px; padding: 10px max(24px, calc((100% - 1200px) / 2)); border-top: 3px solid #06303a; border-bottom: 1px solid #dce8e8; background: rgb(255 255 255 / 94%); color: #075867; backdrop-filter: blur(12px); }
+.paciente .brand { color: #087b82; font-size: 1.2rem; letter-spacing: -0.03em; }
+.paciente .brandLogo { width: 46px; height: 46px; }
+.paciente .roleTag { order: 2; padding: 0.3rem 0.65rem; background: #eaf7f8; color: #075867; font-size: 0.65rem; }
+.paciente .nav { order: 3; display: flex; justify-content: flex-end; gap: clamp(0.4rem, 1.5vw, 1.2rem); }
+.paciente .navLink { padding: 0.65rem 0.8rem; color: #315f67; font-size: 0.82rem; font-weight: 650; white-space: nowrap; }
+.paciente .navLink:hover { background: #eaf7f8; color: #075867; }
+.paciente .navLinkAtivo, .paciente .navLinkAtivo:hover { background: #eaf7f8; color: #063e4b; box-shadow: inset 0 -2px 0 #087b82; }
+.paciente .navLink:focus-visible { outline-color: #087b82; }
+.paciente .spacer { display: none; }
+.paciente .userBox { order: 4; max-width: 190px; padding: 0 0 0 1rem; border-top: 0; border-left: 1px solid #dce8e8; color: #698086; font-size: 0.7rem; overflow: hidden; }
+.paciente .userBox strong, .paciente .userBox span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.paciente .userBox strong { color: #174852; font-size: 0.78rem; }
+.paciente .main { min-height: calc(100dvh - 78px); }
+.paciente .topbar { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 1.6rem 0 0.8rem; border: 0; background: transparent; }
+.paciente .topbar h1 { color: #063e4b; font-size: 1.15rem; }
+.paciente .topbar p { color: #6a7e83; font-size: 0.8rem; }
+.paciente .topbar button { border-color: #cadbdd; background: #fff; color: #075867; }
+.paciente .content { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 1rem 0 5rem; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  /* Equipe no celular: barra compacta no topo com o menu rolando na horizontal
+     (antes o menu inteiro empilhava antes do conteúdo). */
+  .sidebar {
+    min-width: 0;
+    position: sticky; z-index: 20; height: auto; padding: 0.7rem 1rem 0.5rem;
+    flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem;
+  }
+  .sidebar .roleTag { align-self: center; }
+  .sidebar .spacer, .sidebar .userBox { display: none; }
+  .nav {
+    display: flex; width: 100%; gap: 0.3rem; overflow-x: auto; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch; padding-bottom: 0.15rem;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .navLink { flex: 0 0 auto; white-space: nowrap; padding: 0.55rem 0.8rem; min-height: 44px; display: inline-flex; align-items: center; }
+  .navLinkAtivo, .navLinkAtivo:hover { box-shadow: inset 0 -3px 0 #7fd6df; }
+  .topbar { padding: 0.9rem 1rem; flex-wrap: wrap; }
+  .content { padding: 1rem; }
+  .paciente .sidebar { position: sticky; display: flex; flex-wrap: wrap; min-height: auto; padding: 10px 16px; }
+  .paciente .roleTag, .paciente .userBox { display: none; }
+  .paciente .nav { order: 5; justify-content: flex-start; width: 100%; overflow-x: auto; }
+  .paciente .navLink { flex: 0 0 auto; }
+  .paciente .topbar, .paciente .content { width: min(100% - 28px, 680px); }
+}
+/* Administração: identidade visual própria em toda a área. */
+.admin { --cx-font: 'Segoe UI', Arial, sans-serif; --cx-line: #e7ecef; --cx-shadow: 0 4px 24px #14394605; background: #f5f7fa; grid-template-columns: 248px minmax(0,1fr); color: #263e4a; }
+.admin .sidebar { background: #fff; color: #6e808d; padding: 30px 18px 20px; border-right: 1px solid #e5ebef; gap: 22px; }
+.admin .brand { color: #164e59; font-size: 22px; letter-spacing: -.9px; gap: 10px; padding: 0 10px; }
+.admin .brandLogo { width: 35px; height: 35px; }
+.admin .roleTag { background: #f2f6f7; color: #8a9ba4; border: 1px solid #e7eef0; font-size: 9px; letter-spacing: .14em; padding: 6px 10px; margin-left: 10px; }
+.navCaption { color: #a2b0b8; font-size: 9px; font-weight: 700; letter-spacing: .15em; margin: 16px 0 -7px 12px; }
+.admin .nav { gap: 7px; }
+.admin .navLink { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 9px; font-size: 12px; font-weight: 500; color: #73838f; }
+.admin .navLink:hover { background: #f4f8f9; color: #167d85; }
+.admin .navLinkAtivo, .admin .navLinkAtivo:hover { background: #eaf6f5; color: #127c80; font-weight: 700; box-shadow: none; }
+.navIcon { flex-shrink: 0; }
+.admin .navLinkAtivo::after { content: ''; margin-left: auto; width: 5px; height: 5px; background: #28a49e; border-radius: 50%; }
+.admin .userBox { display: flex; gap: 10px; align-items: center; background: #f8fafb; padding: 12px 10px; border: 1px solid #e9eef0; border-radius: 12px; min-width: 0; font-size: 10px; color: #8b9aa3; }
+.admin .userBox > div { min-width: 0; }.admin .userBox strong { color: #435d68; font-size: 11px; margin-bottom: 4px; }.admin .userBox span:not(.avatar) { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.avatar { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: #dfeeee; color: #237c81; font-size: 14px; font-weight: 700; }
+.admin .topbar { min-height: 84px; padding: 16px 36px; background: #ffffffec; border-bottom: 1px solid #e7ecef; }
+.breadcrumb { display: flex; align-items: center; gap: 10px; color: #95a3ac; font-size: 10px; margin-bottom: 5px; }.breadcrumb > span { color: #c1cbd0; }
+.admin .topbar h1 { font-size: 16px; font-weight: 650; letter-spacing: -.3px; color: #304e59; }
+.topbarActions { display: flex; align-items: center; gap: 20px; }.siteLink { color: #82949e; font-size: 11px; }.siteLink span { margin-left: 8px; }
+.admin .topbar :global(.cx-btn) { padding: 9px 15px; border-radius: 8px; font-size: 11px; min-height: 36px; background: #f9fbfc; }
+.admin .content { padding: 30px 36px; }
+.admin :global(.cx-card) { border-radius: 15px; box-shadow: 0 3px 18px #203d4d03; border-color: #e6ecef; }
+.admin :global(.cx-table) { font-size: 12px; }.admin :global(.cx-table th) { font-size: 9px; letter-spacing: .09em; background: #f8fafc; color: #94a2ad; font-weight: 650; padding: 15px; }.admin :global(.cx-table td) { padding: 17px 15px; border-color: #eef2f5; color: #5d7681; }.admin :global(.cx-table tr:hover td) { background: #f8fcfc; }
+.admin :global(.cx-field label) { color: #748b96; font-size: 11px; }.admin :global(.cx-field input), .admin :global(.cx-field select), .admin :global(.cx-field textarea) { border-color: #e4ebef; background: #fcfdfe; font-size: 12px; min-height: 43px; }
+.admin :global(.cx-btn) { border-radius: 8px; font-size: 12px; }.admin :global(.cx-badge) { font-size: 10px; font-weight: 600; }
+.admin .navLink:focus-visible, .siteLink:focus-visible { outline: 2px solid #2ba6a2; outline-offset: 3px; }
+@media (max-width: 1150px) and (min-width: 901px) { .admin { grid-template-columns: 218px minmax(0,1fr); }.admin .content, .admin .topbar { padding-left: 24px; padding-right: 24px; }.admin .sidebar { padding-left: 12px; padding-right: 12px; } }
+@media (max-width: 900px) { .admin { grid-template-columns: minmax(0,1fr); }.admin .sidebar { padding: 12px 16px 10px; gap: 10px; border-bottom: 1px solid #e5ebef; }.admin .brand { padding: 0; font-size: 19px; }.admin .brandLogo { width: 29px; height: 29px; }.admin .roleTag { margin-left: auto; }.admin .navCaption, .admin .userBox { display: none; }.admin .navLink { padding: 10px 12px; font-size: 11px; gap: 8px; }.admin .navLinkAtivo::after { display: none; }.admin .topbar { min-height: 74px; padding: 14px 20px; }.admin .content { padding: 22px 20px; }.topbarActions { gap: 12px; } }
+@media (max-width: 480px) { .admin .content { padding: 18px 14px; }.admin .topbar { padding: 12px 16px; }.admin .topbar h1 { font-size: 14px; }.siteLink { display: none; }.admin :global(.cx-table-cards td) { padding: 9px 0; }.admin :global(.cx-table-cards tr) { border-color: #e5edf1; } }
+/* Legibilidade dos dados e controles. */
+.admin .navLink { font-size: 13px; }
+.admin :global(.cx-table) { font-size: 13px; }
+.admin :global(.cx-table th) { font-size: 10px; color: #7c909c; }
+.admin .userBox { font-size: 11px; }
+.admin .topbar :global(.cx-btn) { font-size: 12px; }
+@media (max-width: 900px) { .admin .navLink { font-size: 12px; } }
