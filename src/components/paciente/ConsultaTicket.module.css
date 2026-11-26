@@ -1,19 +1,19 @@
 .ticket {
   display: grid;
-  grid-template-columns: 1fr auto;
-  background: #fffdf9;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(170px, 210px);
+  background: #fff;
   border: 1px solid var(--cx-line);
-  border-radius: 18px;
+  border-radius: 10px;
   box-shadow: var(--cx-shadow);
-  margin-bottom: 1.6rem;
+  margin-bottom: 0;
   overflow: hidden;
 }
 
-.corpo { padding: 1.6rem 1.8rem; }
+.corpo { padding: 1.6rem 1.8rem; min-width: 0; overflow-wrap: anywhere; }
 
 .eyebrow {
   font-size: 0.78rem;
-  color: var(--cx-ocre, #c98a3e);
+  color: #087b82;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -21,7 +21,6 @@
 .linha { margin: 0.5rem 0 0.9rem; }
 
 .dataGrande {
-  font-family: "Georgia", "Source Serif 4", serif;
   font-size: 2.1rem;
   font-weight: 600;
   color: var(--cx-teal-900);
@@ -68,26 +67,39 @@
   align-items: stretch;
   justify-content: center;
   gap: 0.6rem;
-  min-width: 190px;
+  min-width: 0;
   padding: 1.6rem;
+  background: #f6fafb;
 }
+.reminder { color: #5d757e; font-size: 0.8rem; line-height: 1.6; margin-bottom: 0.3rem; }
 
 .vazio {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #ffffff, #f2faf9);
-  border: 1px solid #d4e5e5;
-  border-radius: 20px;
-  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #ffffff, #f6fafb);
+  border: 1px solid #eaf7f8;
+  border-radius: 10px;
+  padding: 2rem 1.5rem;
   text-align: center;
-  margin-bottom: 1.4rem;
-  box-shadow: 0 16px 42px rgb(6 48 58 / 7%);
+  margin-bottom: 0;
+  box-shadow: 0 4px 18px rgb(6 48 58 / 3%);
 }
+.emptyIcon { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 1.1rem; border-radius: 10px; background: #eaf7f8; color: #087b82; }
 .vazio::before { content: ""; position: absolute; top: -70px; right: -50px; width: 190px; height: 190px; border: 1px solid rgb(14 143 158 / 12%); border-radius: 50%; box-shadow: 0 0 0 28px rgb(14 143 158 / 4%); }
 .vazioTitulo { position: relative; font-size: 1.3rem; font-weight: 700; color: var(--cx-teal-900); margin: 0 0 0.4rem; }
 .vazioTexto { position: relative; color: var(--cx-muted); margin: 0 0 1.2rem; }
 .vazio a { position: relative; border-radius: 10px; background: #075867; }
 .vazio a:hover { background: #063e4b; }
+.ticket { border-color: #eaf7f8; border-radius: 10px; box-shadow: 0 6px 25px #203e3406; }
+.corpo { padding: 28px; background: linear-gradient(140deg, #fff, #f6fafb); }
+.eyebrow { display: inline-flex; padding: 6px 10px; background: #eaf7f8; border-radius: 5px; color: #5d757e; font-size: 10px; letter-spacing: .025em; }
+.linha { margin: 18px 0; }.dataGrande { color: #06303a; letter-spacing: -.04em; font-size: 32px; }.hora { color: #5d757e; font-size: 17px; }
+.medico { color: #06303a; font-size: 15px; }.especialidade { color: #5d757e; font-size: 12px; line-height: 1.9; margin-top: 8px; }
+.canhoto { padding: 24px 20px; background: #f6fafb; }.reminder { color: #5d757e; font-size: 11px; }
+.picote { border-left-color: #eaf7f8; }
+.vazio { border-color: #eaf7f8; background: #fff; border-radius: 10px; padding: 37px 25px; }
+.vazio::before { border-color: #eaf7f8; box-shadow: 0 0 0 28px #f6fafb; }.emptyIcon { background: #f6fafb; color: #5d757e; border-radius: 50%; }.vazioTitulo { color: #0b5566; font-size: 19px; letter-spacing: -.03em; }.vazioTexto { color: #5d757e; font-size: 12px; max-width: 340px; margin: 9px auto 20px; line-height: 1.9; }
+.vazio a { background: #005bc8; font-size: 12px; }
 
 @media (max-width: 640px) {
   .ticket { grid-template-columns: 1fr; }
@@ -95,4 +107,14 @@
   .picote::before, .picote::after { left: 50%; transform: translateX(-50%); }
   .picote::before { top: -9px; }
   .picote::after { bottom: -9px; }
+  .corpo, .canhoto { padding: 1.3rem; }
+  .canhoto { gap: 0.75rem; }
+  .vazio { padding: 1.6rem 1.1rem; }
+  .vazioTitulo { font-size: 1.1rem; }
+  .vazioTexto { font-size: 0.9rem; }
 }
+
+.picote::before, .picote::after, .vazio::before { content: none; }
+.picote { border-left-style: solid; border-left-width: 1px; }
+.corpo { background: #fff; }
+@media (max-width: 640px) { .picote { border-left: 0; border-top: 1px solid #dfe9ec; } }

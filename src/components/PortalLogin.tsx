@@ -7,6 +7,7 @@ import { createClient } from "@/lib/local/client";
 import { getPrimaryRole, HOME_BY_ROLE, normalizeRoles, type AppRole } from "@/lib/roles";
 import styles from "./PortalLogin.module.css";
 import PatientPortal from "./PatientPortal";
+import DoctorAccess from "./medico/DoctorAccess";
 import { traduzirErroAuth } from "@/lib/erros";
 
 type PortalLoginProps = {
@@ -25,7 +26,7 @@ const PORTAL = {
   },
   medico: {
     label: "Portal do médico",
-    title: "Sua prática clínica em um só lugar",
+    title: "Portal do médico",
     description: "Consulte sua agenda, acompanhe seus pacientes e registre cada atendimento com segurança.",
     image: "/fotos/enfermagem.jpg",
     emailLabel: "E-mail profissional",
@@ -45,6 +46,7 @@ export default function PortalLogin({ role }: PortalLoginProps) {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -111,26 +113,28 @@ export default function PortalLogin({ role }: PortalLoginProps) {
         required
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="seu@email.com"
+        placeholder={role === 'medico' ? 'Informe seu e-mail' : 'seu@email.com'}
       />
 
       <div className={styles.passwordLabel}>
         <label htmlFor={`${role}-senha`}>Senha</label>
-        <Link href="/recuperar-senha">Esqueci minha senha</Link>
+        {role === 'paciente' && <Link href="/recuperar-senha">Esqueci minha senha</Link>}
       </div>
       <input
         id={`${role}-senha`}
-        type="password"
+        type={mostrarSenha ? "text" : "password"}
         autoComplete="current-password"
         required
         value={senha}
         onChange={(event) => setSenha(event.target.value)}
-        placeholder="Digite sua senha"
+        placeholder={role === 'medico' ? 'Informe sua senha' : 'Digite sua senha'}
       />
+      {role === 'medico' && <button type="button" className={styles.showPassword} aria-pressed={mostrarSenha} onClick={() => setMostrarSenha(v => !v)}>{mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}</button>}
 
       <button type="submit" disabled={carregando}>
         {carregando ? "Entrando..." : role === "paciente" ? "Continuar" : "Entrar no portal"}
       </button>
+      {role === 'medico' && <Link href="/recuperar-senha">Esqueci minha senha</Link>}
       <p className={styles.help}>Acesso local: funciona sem internet.</p>
     </form>
   );
@@ -141,36 +145,5 @@ export default function PortalLogin({ role }: PortalLoginProps) {
     return <PatientPortal accessLink={{ href: cadastro, label: "Me cadastrar" }}>{loginForm}</PatientPortal>;
   }
 
-  return (
-    <main className={`${styles.page} ${role === "medico" ? styles.doctorPage : styles.patientPage}`}>
-      <section className={styles.formSide}>
-        <div className={styles.formWrap}>
-          <Link href="/" className={styles.brand}>
-            <img src="/fotos/logo-transparente.png" alt="ClinicaFlow" />
-            <span>ClinicaFlow</span>
-          </Link>
-
-          <div className={styles.formHeader}>
-            <span className={styles.eyebrow}>{portal.label}</span>
-            <h1>{portal.title}</h1>
-            <p>{portal.description}</p>
-          </div>
-
-          {loginForm}
-
-          <p className={styles.help}>{portal.help}</p>
-          <Link href="/" className={styles.back}>Voltar para a página inicial</Link>
-        </div>
-      </section>
-
-      <section className={styles.visual} style={{ backgroundImage: `url("${portal.image}")` }}>
-        <div className={styles.visualOverlay} />
-        <div className={styles.visualContent}>
-          <span>Saúde com propósito</span>
-          <h2>{role === "medico" ? "Decisões melhores começam com informação." : "Mais cuidado em cada conexão."}</h2>
-          <p>{role === "medico" ? "Tenha sua rotina clínica organizada para dedicar mais tempo ao que realmente importa: seus pacientes." : "Uma experiência simples, humana e segura para cada etapa do atendimento."}</p>
-        </div>
-      </section>
-    </main>
-  );
+  return <DoctorAccess>{loginForm}</DoctorAccess>;
 }

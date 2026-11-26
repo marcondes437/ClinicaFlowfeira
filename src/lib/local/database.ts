@@ -27,7 +27,7 @@ export async function asUser<T>(user: LocalUser | null, fn: (db: PoolClient) => 
   } catch (e) { await db.query('rollback'); throw e; } finally { db.release(); }
 }
 const tables = new Set(['profiles', 'user_roles', 'unidades', 'especialidades', 'profissionais', 'pacientes', 'pacientes_dados_sensiveis', 'consultas', 'evolucoes', 'agenda_medica', 'agenda_bloqueios', 'tarefas_internas', 'interessados_presencial']);
-const rpcs = new Set(['salvar_meus_dados', 'agendar_por_especialidade', 'previsualizar_vaga', 'resumo_vagas', 'cancelar_consulta', 'alterar_status_consulta', 'liberar_agenda', 'remover_horario', 'criar_bloqueio', 'remover_bloqueio', 'listar_agenda', 'indicadores_agenda', 'vincular_acesso_profissional']);
+const rpcs = new Set(['agendar_horario_escolhido', 'buscar_horarios', 'agendar_com_preferencia', 'previsualizar_com_preferencia', 'profissionais_para_agendamento', 'salvar_meus_dados', 'agendar_por_especialidade', 'previsualizar_vaga', 'resumo_vagas', 'cancelar_consulta', 'alterar_status_consulta', 'liberar_agenda', 'remover_horario', 'criar_bloqueio', 'remover_bloqueio', 'listar_agenda', 'indicadores_agenda', 'vincular_acesso_profissional']);
 function identifier(s: string) { if (!/^[a-z_][a-z0-9_]*$/.test(s)) throw new Error('Identificador inválido'); return `"${s}"`; }
 function splitColumns(s: string) {
   let depth = 0, start = 0; const parts: string[] = [];

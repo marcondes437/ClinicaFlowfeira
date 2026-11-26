@@ -5,7 +5,7 @@ import styles from "./page.module.css";
 export default function AgendamentoOnlinePage() {
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
+      <header className={`cx-glass-header ${styles.header}`}>
         <Link href="/" className={styles.brand}>
           <img src="/fotos/logo-transparente.png" alt="ClinicaFlow" />
           <span>ClinicaFlow</span>

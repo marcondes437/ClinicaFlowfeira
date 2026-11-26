@@ -1,5 +1,7 @@
 import Panel from "@/components/Panel";
-import ConsultasTable, { type ConsultaRow } from "@/components/ConsultasTable";
+import { type ConsultaRow } from "@/components/ConsultasTable";
+import HistoricoTimeline from "@/components/paciente/HistoricoTimeline";
+import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/local/server";
 import { CONSULTA_SELECT } from "@/lib/queries";
@@ -13,17 +15,17 @@ export default async function HistoricoPaciente() {
   const paciente = await getPacienteDoUsuario(user.id);
   const supabase = await createClient();
 
-  const { data: consultas } = paciente
+  const { data: consultas, error: erroConsultas } = paciente
     ? await supabase.from("consultas").select(CONSULTA_SELECT).eq("paciente_id", paciente.id).order("data_hora", { ascending: false })
-    : { data: [] };
-  const { data: evolucoes } = paciente
+    : { data: [], error: null };
+  const { data: evolucoes, error: erroEvolucoes } = paciente
     ? await supabase.from("evolucoes").select("id, descricao, created_at").eq("paciente_id", paciente.id).order("created_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
 
   return (
     <>
-      <Panel titulo="Histórico de atendimentos">
-        <ConsultasTable consultas={(consultas ?? []) as unknown as ConsultaRow[]} acoesPaciente ocultarPaciente vazio="Você ainda não tem consultas." />
+      <Panel titulo="Meu histórico" descricao="Suas consultas, da mais recente à mais antiga." acao={<Link href="/paciente/agendar" className="cx-btn cx-btn-primary">Agendar consulta</Link>}>
+        {erroConsultas || !paciente ? <p className="cx-alert cx-alert-error" role="alert">Não foi possível carregar seu histórico. Atualize a página e tente novamente.</p> : <HistoricoTimeline consultas={(consultas ?? []) as unknown as ConsultaRow[]} acoesPaciente />}
       </Panel>
       <Panel titulo="Registros disponibilizados pela equipe">
         {(evolucoes ?? []).map((e) => (
@@ -32,7 +34,7 @@ export default async function HistoricoPaciente() {
             <p style={{ margin: "0.2rem 0 0" }}>{e.descricao}</p>
           </article>
         ))}
-        {!evolucoes?.length && <p style={{ color: "var(--cx-muted)" }}>Nenhum registro disponível.</p>}
+        {erroEvolucoes ? <p className="cx-alert cx-alert-error" role="alert">Não foi possível carregar os registros da equipe. Tente novamente.</p> : !evolucoes?.length && <p style={{ color: "var(--cx-muted)" }}>Nenhum registro disponível.</p>}
       </Panel>
     </>
   );

@@ -117,16 +117,21 @@ export type ResumoVaga = {
   primeira: string;
 };
 
-/** Opções para o agendamento do paciente: nada de médicos, só especialidades e unidades. */
+/** Opções de especialidade, unidade e profissionais com agenda disponível. */
 export async function getOpcoesPaciente() {
   const supabase = await createClient();
-  const [especialidades, unidades, resumo] = await Promise.all([
+  const [especialidades, unidades, resumo, profissionais] = await Promise.all([
     supabase.from("especialidades").select("id, nome, descricao").eq("status", "ativo").order("nome"),
     supabase.from("unidades").select("id, nome, endereco, cidade").eq("status", "ativo").order("nome"),
     supabase.rpc("resumo_vagas"),
+    supabase.rpc("profissionais_para_agendamento"),
   ]);
   if (resumo.error) console.error("Falha ao carregar resumo de vagas:", resumo.error.message);
   return {
+    erro: especialidades.error || unidades.error || resumo.error || profissionais.error
+      ? "Não foi possível carregar a disponibilidade. Atualize a página e tente novamente."
+      : null,
+    profissionais: (profissionais.data ?? []) as Array<{ id: string; nome: string; especialidade_id: string; unidade_id: string }>,
     especialidades: especialidades.data ?? [],
     unidades: unidades.data ?? [],
     resumo: ((resumo.data ?? []) as ResumoVaga[]).map((r) => ({ ...r, total: Number(r.total) })),

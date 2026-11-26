@@ -1,0 +1,85 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { Client } = require('pg');
+const puppeteer = require('puppeteer-core');
+const root = path.resolve(__dirname, '..');
+const base = process.env.BASE_URL || 'http://127.0.0.1:3000';
+async function main() {
+ const db = new Client(JSON.parse(fs.readFileSync(path.join(root, '.local/database.json'), 'utf8'))); await db.connect();
+ const browser = await puppeteer.launch({ executablePath: process.env.CHROME_PATH || ['C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find(fs.existsSync), headless: true });
+ const page = await browser.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
+ const email = `patient-view-${Date.now()}@teste.local`; let user, patient, professional;
+ const imageDir = path.join(root, '.local', 'preview-paciente'); fs.mkdirSync(imageDir, { recursive: true });
+ async function screen(width, name, route = '/paciente') {
+  await page.setViewport({ width, height: width < 640 ? 844 : 1000, isMobile: width < 640 });
+  const response = await page.goto(base + route, { waitUntil: 'networkidle2', timeout: 60000 }); assert.equal(response.status(), 200);
+  const dimensions = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: innerWidth }));
+  assert(dimensions.content <= dimensions.viewport + 1, `${route} em ${width}px: rolagem horizontal`);
+  assert.equal(errors.length, 0, errors.join(', '));
+  await page.screenshot({ path: path.join(imageDir, name + '.png'), fullPage: true });
+ }
+ try {
+  await page.goto(base + '/portal-paciente', { waitUntil: 'networkidle2' });
+  const created = await page.evaluate(async email => (await fetch('/api/local', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'signup', payload: { email, password: 'TestePaciente2026', options: { data: { nome: 'Mariana Oliveira Teste', consentimento_lgpd_em: new Date().toISOString() } } } }) })).json(), email);
+  assert.equal(created.error, null); user = created.data.user;
+  patient = (await db.query('select id from public.pacientes where user_id=$1', [user.id])).rows[0];
+  await page.setViewport({ width: 1440, height: 800 });
+  await page.goto(base + '/paciente', { waitUntil: 'networkidle2' });
+  await page.evaluate(() => document.querySelector('section[aria-labelledby="patient-history"]').scrollIntoView({ block: 'center' }));
+  await page.waitForFunction(() => document.querySelector('section[aria-labelledby="patient-history"]').getAnimations().some(animation => animation.playState === 'running'), { timeout: 3000 });
+  console.log('OK: conteúdo entra suavemente ao rolar a página.');
+  await screen(390, 'cadastro-pendente-celular'); assert((await page.$eval('body', e => e.innerText)).includes('Vamos completar seu cadastro?'));
+  await db.query("update public.pacientes set celular='11987654321',data_nascimento='1990-01-01',cadastro_completo_em=now() where id=$1", [patient.id]);
+  await screen(1440, 'painel-vazio-desktop');
+  assert((await page.$eval('body', e => e.innerText)).includes('Nenhuma consulta agendada'));
+  const hero = 'section[aria-labelledby="patient-heading"]';
+  assert.equal((await page.$$(hero + ' img')).length, 0, 'Abertura não deve conter fotografia');
+  const identity = await page.$eval(hero, el => ({ border: getComputedStyle(el).borderTopWidth, radius: getComputedStyle(el).borderTopLeftRadius, primary: getComputedStyle(el.querySelector('a')).backgroundColor, text: el.innerText }));
+  assert.equal(identity.border, '0px', 'Abertura deve ficar sem moldura');
+  assert.equal(identity.radius, '0px', 'Abertura deve ficar sem caixa arredondada');
+  assert.equal(identity.primary, 'rgb(0, 91, 200)', 'Botão deve usar o azul original da clínica');
+  assert(identity.text.includes('Minha agenda') && identity.text.includes('Nenhuma consulta agendada'), 'Resumo deve refletir a agenda real');
+  await page.waitForFunction(selector => document.querySelector(selector).getAnimations({ subtree: true }).some(a => a.playState === 'running'), {}, hero);
+  await page.click(hero + ' button[aria-pressed]');
+  await page.waitForFunction(selector => document.querySelector(selector).getAnimations({ subtree: true }).every(a => a.playState !== 'running'), {}, hero);
+  assert.equal(await page.$eval(hero + ' button[aria-pressed]', e => e.getAttribute('aria-pressed')), 'true');
+  await page.screenshot({ path: path.join(imageDir, 'animacao-pausada-desktop.png'), fullPage: true });
+  await page.click(hero + ' button[aria-pressed]');
+  await page.waitForFunction(selector => document.querySelector(selector).getAnimations({ subtree: true }).some(a => a.playState === 'running'), {}, hero);
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await page.waitForFunction(selector => document.querySelector(selector).getAnimations({ subtree: true }).every(a => a.playState !== 'running'), {}, hero);
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+  professional = (await db.query("insert into public.profissionais(nome,especialidade_id,unidade_id) values('Dra. Marina Almeida (teste)',(select id from public.especialidades where status='ativo' order by nome limit 1),(select id from public.unidades where status='ativo' order by nome limit 1)) returning id,especialidade_id,unidade_id")).rows[0];
+  for (let day = 1; day <= 12; day++) await db.query("insert into public.consultas(paciente_id,profissional_id,especialidade_id,unidade_id,data_hora,status) values($1,$2,$3,$4,now()-make_interval(days=>$5),'concluida')", [patient.id, professional.id, professional.especialidade_id, professional.unidade_id, day]);
+  const future = (await db.query("insert into public.consultas(paciente_id,profissional_id,especialidade_id,unidade_id,data_hora,status) values($1,$2,$3,$4,now()+interval '2 days','confirmada') returning id", [patient.id, professional.id, professional.especialidade_id, professional.unidade_id])).rows[0];
+  await screen(1440, 'consulta-calendario-desktop');
+  const cdp = await page.createCDPSession(); await cdp.send('Page.setDownloadBehavior', { behavior: 'allow', downloadPath: imageDir });
+  await page.evaluate(() => [...document.querySelectorAll('button')].find(el => el.textContent.includes('Adicionar ao calendário')).click());
+  await page.waitForFunction(() => document.body.innerText.includes('Arquivo pronto.'));
+  const file = path.join(imageDir, `consulta-${future.id}.ics`);
+  for (let i = 0; i < 40 && !fs.existsSync(file); i++) await new Promise(resolve => setTimeout(resolve, 100));
+  assert(fs.readFileSync(file, 'utf8').includes(`UID:${future.id}@clinicaflow.local`), 'Download do calendário deve conter a consulta correta');
+  await page.click('section[aria-labelledby="prepare-heading"] input[type=checkbox]');
+  assert((await page.$eval('section[aria-labelledby="prepare-heading"]', el => el.innerText)).includes('1 de 3 itens conferidos'));
+  await db.query("insert into public.consultas(paciente_id,profissional_id,especialidade_id,unidade_id,data_hora,status) values($1,$2,$3,$4,now()-interval '30 minutes','em_atendimento')", [patient.id, professional.id, professional.especialidade_id, professional.unidade_id]);
+  await screen(1440, 'painel-consultas-desktop');
+  const completed = await page.$eval('section[aria-label="Resumo do seu atendimento"]', e => e.innerText); assert(/12\s*concluídos/.test(completed), 'Total deve incluir os 12 atendimentos, além do limite de consultas recentes');
+  assert((await page.$eval('body', e => e.innerText)).includes('Seu atendimento está em andamento.'));
+  const position = await page.evaluate(() => { const title = [...document.querySelectorAll('span')].find(e => e.textContent.includes('Seu atendimento ·')); const card = title.parentElement.parentElement; const actions = card.lastElementChild; const body = card.firstElementChild; return { body: body.getBoundingClientRect().top, actions: actions.getBoundingClientRect().top }; });
+  assert(Math.abs(position.body - position.actions) < 3, 'Ações e consulta devem ficar na mesma linha no desktop');
+  for (const width of [360, 390, 768, 1000]) await screen(width, 'painel-consultas-' + width);
+  await screen(390, 'historico-celular', '/paciente/historico'); assert((await page.$$('ol > li')).length >= 14);
+  await screen(390, 'meus-dados-celular', '/paciente/meus-dados');
+  await screen(390, 'agendamento-celular', '/paciente/agendar');
+  console.log('OK: abertura sem foto, animações, pausa/retomada e redução de movimento; painel, calendário, histórico, dados e agendamento em 360/390/768/1000/1440px.');
+  console.log('Prévia: .local/preview-paciente');
+ } finally {
+  await browser.close();
+  if (patient) await db.query('delete from public.consultas where paciente_id=$1', [patient.id]);
+  if (professional) await db.query('delete from public.profissionais where id=$1', [professional.id]);
+  if (user) await db.query('delete from auth.users where id=$1', [user.id]);
+  await db.end();
+ }
+}
+main().catch(e => { console.error(e); process.exitCode = 1; });

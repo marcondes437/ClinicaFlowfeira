@@ -37,4 +37,6 @@
 .motivo { margin: 0.15rem 0 0; font-size: 0.88rem; color: var(--cx-muted); }
 
 .vazio { color: var(--cx-muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.conteudo { min-width: 0; overflow-wrap: anywhere; }
 

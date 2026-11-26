@@ -31,6 +31,7 @@ export default function NavLinks({ nav, icons = false }: { nav: NavItem[]; icons
 
 function NavIcon({ href }: { href: string }) {
   const paths: Record<string, React.ReactNode> = {
+    medico: <><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-12 5 2 2 4-4"/></>,
     admin: <><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></>,
     pacientes: <><circle cx="9" cy="8" r="3" /><path d="M3 21v-3a6 6 0 0 1 12 0v3m2-16a3 3 0 0 1 0 6m1 3a5 5 0 0 1 3 5v2" /></>,
     profissionais: <><path d="M5 3v6a5 5 0 0 0 10 0V3M3 3h4m6 0h4m-7 11v2a5 5 0 0 0 10 0v-2" /><circle cx="20" cy="12" r="2" /></>,

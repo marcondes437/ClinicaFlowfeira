@@ -13,11 +13,14 @@
     "db:senha": "node scripts/local-password.mjs",
     "db:backup": "node scripts/local-backup.mjs",
     "lint": "tsc --noEmit -p tsconfig.check.json",
-    "test": "node --test scripts/test-unit.cjs scripts/test-assistant.cjs",
+    "test": "node --test scripts/test-unit.cjs scripts/test-assistant.cjs scripts/test-local-start.mjs",
     "test:unit": "node --test scripts/test-unit.cjs",
     "test:db": "node scripts/test-db.cjs",
     "test:responsivo": "node scripts/test-responsivo.cjs",
-    "check": "npm run lint && npm run test && npm run build"
+    "check": "npm run lint && npm run test && npm run build",
+    "demo:capturar": "node scripts/capture-presentation.cjs",
+    "test:apresentacao": "node scripts/test-presentation.cjs",
+    "test:medico": "node scripts/test-medico.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

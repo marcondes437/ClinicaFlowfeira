@@ -33,26 +33,35 @@
 .content { padding: 1.8rem; }
 
 /* Patient portal: a lighter, appointment-first layout. */
-.paciente { display: block; min-height: 100dvh; background: radial-gradient(circle at 0 0, #e7f8fa 0, transparent 24%), radial-gradient(circle at 100% 0, #fff4df 0, transparent 22%), #f8fbfb; }
-.paciente .sidebar { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 1.25rem; width: 100%; height: auto; min-height: 78px; padding: 10px max(24px, calc((100% - 1200px) / 2)); border-top: 3px solid #06303a; border-bottom: 1px solid #dce8e8; background: rgb(255 255 255 / 94%); color: #075867; backdrop-filter: blur(12px); }
+.paciente { display: block; min-height: 100dvh; background: radial-gradient(circle at 0 0, #e7f8fa 0, transparent 24%), radial-gradient(circle at 100% 0, #fff4df 0, transparent 22%), #f6fafb; }
+.paciente .sidebar { position: sticky; z-index: 20; top: 0; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 1.25rem; width: 100%; height: auto; min-height: 78px; padding: 10px max(24px, calc((100% - 1200px) / 2)); border-top: 3px solid #06303a; border-bottom: 1px solid #eaf7f8; background: rgb(255 255 255 / 94%); color: #075867; backdrop-filter: blur(12px); }
 .paciente .brand { color: #087b82; font-size: 1.2rem; letter-spacing: -0.03em; }
 .paciente .brandLogo { width: 46px; height: 46px; }
-.paciente .roleTag { order: 2; padding: 0.3rem 0.65rem; background: #eaf7f8; color: #075867; font-size: 0.65rem; }
+.paciente .roleTag { order: 2; align-self: center; padding: 0.3rem 0.65rem; background: #eaf7f8; color: #075867; font-size: 0.65rem; }
 .paciente .nav { order: 3; display: flex; justify-content: flex-end; gap: clamp(0.4rem, 1.5vw, 1.2rem); }
 .paciente .navLink { padding: 0.65rem 0.8rem; color: #315f67; font-size: 0.82rem; font-weight: 650; white-space: nowrap; }
 .paciente .navLink:hover { background: #eaf7f8; color: #075867; }
 .paciente .navLinkAtivo, .paciente .navLinkAtivo:hover { background: #eaf7f8; color: #063e4b; box-shadow: inset 0 -2px 0 #087b82; }
 .paciente .navLink:focus-visible { outline-color: #087b82; }
 .paciente .spacer { display: none; }
-.paciente .userBox { order: 4; max-width: 190px; padding: 0 0 0 1rem; border-top: 0; border-left: 1px solid #dce8e8; color: #698086; font-size: 0.7rem; overflow: hidden; }
+.paciente .userBox { order: 4; max-width: 190px; padding: 0 0 0 1rem; border-top: 0; border-left: 1px solid #eaf7f8; color: #698086; font-size: 0.7rem; overflow: hidden; }
 .paciente .userBox strong, .paciente .userBox span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .paciente .userBox strong { color: #174852; font-size: 0.78rem; }
 .paciente .main { min-height: calc(100dvh - 78px); }
-.paciente .topbar { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 1.6rem 0 0.8rem; border: 0; background: transparent; }
-.paciente .topbar h1 { color: #063e4b; font-size: 1.15rem; }
-.paciente .topbar p { color: #6a7e83; font-size: 0.8rem; }
+.paciente .topbar { width: min(1200px, calc(100% - 64px)); margin: 0 auto; padding: 2rem 0 1rem; border: 0; background: transparent; }
+.paciente .topbar h1 { color: #063e4b; font-size: 1.4rem; margin-bottom: 7px; }
+.paciente .topbar p { color: #6a7e83; font-size: 0.87rem; }
 .paciente .topbar button { border-color: #cadbdd; background: #fff; color: #075867; }
-.paciente .content { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 1rem 0 5rem; }
+.paciente .content { width: min(1200px, calc(100% - 64px)); margin: 0 auto; padding: 0.8rem 0 4rem; }
+.paciente :global(.cx-card) { border-color: #eaf7f8; box-shadow: 0 4px 18px #06303a05; border-radius: 16px; }
+.paciente :global(.cx-btn) { min-height: 44px; border-radius: 10px; font-size: 14px; }
+.paciente .navLink { font-size: 14px; }
+.paciente .topbar button { min-height: 44px; padding-inline: 18px !important; }
+@media (min-width: 901px) and (max-width: 1150px) {
+  .paciente .sidebar { grid-template-columns: auto minmax(0, 1fr); padding-inline: 24px; gap: 16px; }
+  .paciente .roleTag, .paciente .userBox { display: none; }
+  .paciente .nav { gap: 4px; }
+}
 
 @media (max-width: 900px) {
   .shell { grid-template-columns: minmax(0, 1fr); }
@@ -79,6 +88,17 @@
   .paciente .nav { order: 5; justify-content: flex-start; width: 100%; overflow-x: auto; }
   .paciente .navLink { flex: 0 0 auto; }
   .paciente .topbar, .paciente .content { width: min(100% - 28px, 680px); }
+}
+@media (max-width: 640px) {
+  .paciente .sidebar { position: relative; padding: 12px 14px; gap: 10px; }
+  .paciente .brand { font-size: 19px; }
+  .paciente .brandLogo { width: 35px; height: 35px; }
+  .paciente .nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; overflow: visible; }
+  .paciente .navLink { min-height: 44px; justify-content: center; text-align: center; padding: 10px 7px; font-size: 13px; }
+  .paciente .topbar { padding-top: 24px; flex-wrap: nowrap; align-items: flex-start; }
+  .paciente .topbar h1 { font-size: 20px; }
+  .paciente .topbar p { font-size: 12px; line-height: 1.7; max-width: 240px; }
+  .paciente .content { padding-top: 10px; }
 }
 /* Administração: identidade visual própria em toda a área. */
 .admin { --cx-font: 'Segoe UI', Arial, sans-serif; --cx-line: #e7ecef; --cx-shadow: 0 4px 24px #14394605; background: #f5f7fa; grid-template-columns: 248px minmax(0,1fr); color: #263e4a; }
@@ -111,9 +131,58 @@
 @media (max-width: 900px) { .admin { grid-template-columns: minmax(0,1fr); }.admin .sidebar { padding: 12px 16px 10px; gap: 10px; border-bottom: 1px solid #e5ebef; }.admin .brand { padding: 0; font-size: 19px; }.admin .brandLogo { width: 29px; height: 29px; }.admin .roleTag { margin-left: auto; }.admin .navCaption, .admin .userBox { display: none; }.admin .navLink { padding: 10px 12px; font-size: 11px; gap: 8px; }.admin .navLinkAtivo::after { display: none; }.admin .topbar { min-height: 74px; padding: 14px 20px; }.admin .content { padding: 22px 20px; }.topbarActions { gap: 12px; } }
 @media (max-width: 480px) { .admin .content { padding: 18px 14px; }.admin .topbar { padding: 12px 16px; }.admin .topbar h1 { font-size: 14px; }.siteLink { display: none; }.admin :global(.cx-table-cards td) { padding: 9px 0; }.admin :global(.cx-table-cards tr) { border-color: #e5edf1; } }
 /* Legibilidade dos dados e controles. */
+.paciente { --cx-teal-900: #06303a; --cx-teal-700: #005bc8; --cx-teal-500: #0e8f9e; --cx-line: #dfe9ec; --cx-bg: #f6fafb; --cx-shadow: 0 6px 24px #203e3406; background: #f6fafb; }
+.paciente .sidebar { border-top-color: #0b5566; background: #ffffff; border-bottom-color: #dfe9ec; }
+.paciente .brand { color: #0b5566; }
+.paciente .roleTag { background: #eaf7f8; color: #0b5566; border: 1px solid #dfe9ec; font-size: 9px; }
+.paciente .navLink { color: #315f67; font-size: 12px; font-weight: 600; }
+.paciente .navLinkAtivo, .paciente .navLinkAtivo:hover { background: #eaf7f8; color: #06303a; box-shadow: inset 0 -2px 0 #0e8f9e; }
+.paciente .topbar h1 { color: #06303a; font-size: 22px; letter-spacing: -.04em; }
+.paciente .topbar p { color: #5d757e; font-size: 12px; }
+.paciente .topbar button { color: #0b5566; border-color: #dfe9ec; background: #fff; font-size: 12px; }
+.paciente .userBox { border-color: #dfe9ec; color: #5d757e; }.paciente .userBox strong { color: #0b5566; }
+.paciente :global(.cx-btn-primary) { background: #005bc8; }.paciente :global(.cx-btn-primary:hover) { background: #06303a; }
+.paciente :global(.cx-card) { border-color: #dfe9ec; border-radius: 10px; }
 .admin .navLink { font-size: 13px; }
 .admin :global(.cx-table) { font-size: 13px; }
 .admin :global(.cx-table th) { font-size: 10px; color: #7c909c; }
 .admin .userBox { font-size: 11px; }
 .admin .topbar :global(.cx-btn) { font-size: 12px; }
 @media (max-width: 900px) { .admin .navLink { font-size: 12px; } }
+
+@media (max-width:900px) { .topbar:global(.cx-glass-header) {position:relative !important;z-index:1;} .shell:not(.paciente):not(.admin) .sidebar {background:rgb(6 48 58 / 90%);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);} .admin .sidebar {background:rgb(255 255 255 / 80%);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);} }
+/* Medical workspace: clinical blue identity and a quieter navigation surface. */
+.medico {--cx-teal-900:#06303a;--cx-teal-700:#005bc8;--cx-line:#dfe9ec;background:#f6fafb;grid-template-columns:240px minmax(0,1fr);}
+.medico .sidebar {background:#fff;color:#5d757e;border-right:1px solid #dfe9ec;padding:28px 16px;gap:24px;}
+.medico .brand {color:#0b5566;font-size:21px;letter-spacing:-.04em;padding:0 8px;}
+.medico .brandLogo {width:36px;height:36px;}
+.medico .roleTag {background:#eaf7f8;color:#0b5566;border:1px solid #dfe9ec;font-size:9px;letter-spacing:.12em;margin-left:8px;}
+.medico .nav {gap:8px;}
+.medico .navLink {color:#5d757e;font-size:13px;padding:14px 16px;border-radius:7px;}
+.medico .navLink:hover {background:#f6fafb;color:#0b5566;}
+.medico .navLinkAtivo,.medico .navLinkAtivo:hover {background:#eaf7f8;color:#0b5566;box-shadow:inset 3px 0 0 #005bc8;font-weight:650;}
+.medico .navLink:focus-visible{outline-color:#005bc8;}
+.medico .userBox{border-top:1px solid #dfe9ec;color:#5d757e;font-size:11px;padding:16px 8px 0;overflow-wrap:anywhere;}
+.medico .userBox strong{color:#0b5566;font-size:12px;margin-bottom:5px;}
+.medico .topbar{min-height:82px;padding:18px 32px;}
+.medico .topbar h1{font-size:16px;color:#0b5566;}
+.medico .topbar p{font-size:11px;line-height:1.6;margin-top:4px;}
+.medico .topbar :global(.cx-btn){font-size:12px;background:#fff;border-radius:6px;}
+.medico .content{padding:30px 32px 50px;width:100%;max-width:1660px;margin:0 auto;}
+@media(max-width:900px){.medico{grid-template-columns:minmax(0,1fr);}.medico .sidebar{padding:12px 18px 8px;gap:10px;border-bottom:1px solid #dfe9ec;background:rgb(255 255 255 / 80%) !important;}.medico .brand{padding:0;font-size:20px;}.medico .roleTag{margin-left:auto;}.medico .nav{gap:8px;}.medico .navLink{padding:10px 16px;}.medico .navLinkAtivo{box-shadow:inset 0 -2px 0 #005bc8;}.medico .topbar{padding:18px 20px;min-height:74px;}.medico .content{padding:24px 20px 40px;}}
+@media(max-width:480px){.medico .content{padding:20px 14px 35px;}.medico .topbar{padding:16px;}.medico .topbar p{max-width:250px;}.medico .topbarActions{margin-left:auto;}}
+.medico .navLink{display:flex;align-items:center;gap:12px;}.medico .navIcon{color:#7398a4;}.medico .navLinkAtivo .navIcon{color:#005bc8;}.medico .userBox{padding:16px 12px;border:1px solid #e1edf1;background:#f6fafb;border-radius:8px;}.medico .topbar{border-bottom-color:#e5eef2;}.medico .navLinkAtivo:after{content:'';height:5px;width:5px;border-radius:50%;background:#005bc8;margin-left:auto;}
+@media(max-width:900px){.medico .navLinkAtivo:after{display:none;}}
+.medico{background:#f7f9fa;}.medico .sidebar{border:0;}.medico .roleTag{border:0;border-radius:0;background:transparent;padding:0;color:#7a9098;font-size:9px;}.medico .navLink{border-radius:0;}.medico .navLinkAtivo,.medico .navLinkAtivo:hover{border-radius:0;box-shadow:none;background:#f0f6f8;color:#0b5566;}.medico .navLinkAtivo:after{display:none;}.medico .userBox{background:transparent;border:0;border-radius:0;padding:16px 8px;}.medico .topbar{border-bottom:0;}.medico .topbar :global(.cx-btn){border-radius:3px;}
+.headerUser{display:grid;gap:4px;text-align:right;min-width:0;max-width:260px;}.headerUser strong{font-size:12px;font-weight:650;color:#0b5566;}.headerUser>span{font-size:10px;color:#5d757e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.medico .topbarActions{margin-left:auto;gap:18px;min-width:0;}.medico .topbarActions>button{flex-shrink:0;}@media(max-width:600px){.medico .topbar{align-items:center;gap:14px;}.medico .topbar>div:first-child{flex-basis:100%;}.medico .topbarActions{width:100%;justify-content:flex-end;}.headerUser{max-width:calc(100% - 75px);}}
+.doctorSidebarTools{display:grid;gap:20px;padding:18px 10px 6px;}.doctorSidebarTools>a:first-child{display:flex;gap:12px;align-items:center;font-size:11px;color:#0b5566;}.doctorSidebarTools>a:first-child>span{font-size:23px;font-weight:300;color:#005bc8;}.doctorSidebarTools small{display:block;font-size:9px;color:#8ba1aa;margin-top:5px;}.doctorSidebarTools>a:last-child{font-size:10px;color:#7d959f;}.medico .roleTag{font-size:8px;letter-spacing:.1em;margin:0 0 0 10px;}.medico .navLink{font-size:12px;min-height:45px;padding:13px 16px;}.medico .navLinkAtivo,.medico .navLinkAtivo:hover{background:#eaf4fa;color:#005bc8;}.medico .navIcon{color:#84a3b1;}.medico .navLinkAtivo .navIcon{color:#005bc8;}.medico .brand{font-size:22px;}.medico .brandLogo{width:34px;height:34px;}.medico .topbar{min-height:75px;}.medico .topbar h1{font-size:13px;}.medico .topbar p{font-size:10px;color:#88a0aa;}.medico .headerUser strong{font-size:11px;}.medico .headerUser>span{font-size:9px;}
+@media(max-width:900px){.doctorSidebarTools{display:none;}.medico .navLink{padding:10px 14px;}}
+.medicalLayout{min-height:100vh;background:#f6fafb;color:#06303a;}
+.medicalHeader{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:40px;min-height:78px;padding:14px max(24px,calc((100vw - 1480px)/2));border-bottom:1px solid #e3edef;}
+.medicalHeader .brand{margin:0;flex-shrink:0;color:#0b5566;font-size:23px;}
+.medicalNavigation{display:flex;align-items:center;gap:28px;flex:1;font-size:13px;color:#476772;}
+.medicalNavigation a{padding:12px 0;white-space:nowrap;}
+.medicalNavigation a:hover{color:#005bc8;}
+.medicalHeader .topbarActions{margin-left:auto;}
+.medicalContent{max-width:1480px;margin:auto;padding:36px 24px 60px;}
+@media(max-width:850px){.medicalHeader{flex-wrap:wrap;gap:8px 16px;padding:14px 20px;}.medicalHeader .brand{font-size:20px;}.medicalNavigation{order:3;width:100%;flex:auto;gap:24px;overflow:auto;}.medicalNavigation a{font-size:12px;}.medicalContent{padding:24px 16px 40px;}.medicalHeader .headerUser{max-width:145px;}.medicalHeader .headerUser span{font-size:9px;}}

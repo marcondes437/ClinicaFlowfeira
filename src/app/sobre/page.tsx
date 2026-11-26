@@ -48,8 +48,8 @@ const ESPECIALIDADES = [
 export default function SobrePage() {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.topBar}>
+      <header className={`cx-glass-header ${styles.header}`}>
+        <div className={styles.topBar} data-glass-layer>
           <div className={`cx-container ${styles.topBarInner}`}>
             <div className={styles.brandWrap}>
               <Link href="/" className={styles.logo}>
@@ -69,7 +69,7 @@ export default function SobrePage() {
             </div>
           </div>
         </div>
-        <div className={styles.mainBar}>
+        <div className={styles.mainBar} data-glass-layer>
           <div className={`cx-container ${styles.mainBarInner}`}>
             <nav className={styles.nav}>
               <Link href="/">Início</Link>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import Panel from "@/components/Panel";
+import Link from 'next/link';
+import styles from './agendar.module.css';
 import AgendamentoForm, { type ConsultaParaRemarcar } from "@/components/AgendamentoForm";
 import { requireRole } from "@/lib/auth";
 import { getConsultaParaRemarcar, getOpcoesPaciente } from "@/lib/queries";
@@ -30,21 +31,25 @@ export default async function AgendarPage({
     remarcarId && paciente ? await getConsultaParaRemarcar(remarcarId, paciente.id) : null;
 
   return (
-    <Panel
-      titulo={remarcar ? "Remarcar consulta" : "Agendar consulta"}
-      descricao="Você escolhe a especialidade. O sistema marca o primeiro horário livre na agenda dos médicos e mostra quem vai atender você."
-    >
+    <div className={styles.bookingPage}>
+      <div className={styles.topline}><Link href="/paciente">← Voltar ao meu painel</Link><span>CLINICAFLOW · PORTAL DO PACIENTE</span></div>
+      <div className={styles.surface}>
       {remarcarParam && !remarcar && (
         <div className="cx-alert cx-alert-error">Essa consulta não pode mais ser remarcada. Você pode fazer um novo agendamento abaixo.</div>
       )}
+      {opcoes.erro ? <div className="cx-alert cx-alert-error" role="alert">{opcoes.erro}</div> : <>
+      {!opcoes.resumo.length && <div className="cx-alert" role="status" style={{ background: '#fff8e8', color: '#775818', border: '1px solid #eedfb8' }}>Não há horários liberados para agendamento. A equipe precisa disponibilizar a agenda dos profissionais. Tente novamente após a liberação de novas vagas.</div>}
       <AgendamentoForm
         modo="paciente"
         especialidades={opcoes.especialidades}
         unidades={opcoes.unidades}
         resumo={opcoes.resumo}
+        profissionais={opcoes.profissionais}
         remarcar={remarcar}
         especialidadeInicial={especialidade}
       />
-    </Panel>
+      </>}
+      </div>
+    </div>
   );
 }

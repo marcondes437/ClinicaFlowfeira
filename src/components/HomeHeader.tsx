@@ -15,7 +15,7 @@ export default function HomeHeader() {
   }, []);
 
   return (
-    <header className={`${styles.header} ${compact ? styles.compact : ""}`}>
+    <header className={`cx-glass-header ${styles.header} ${compact ? styles.compact : ""}`}>
       <div className={styles.topBar}>
         <div className={styles.container}>
           <nav className={styles.topNav} aria-label="Navegação institucional">
@@ -24,6 +24,7 @@ export default function HomeHeader() {
             <Link href="/portal-medico">Corpo clínico</Link>
             <a href="/#unidades">Nossas unidades</a>
             <a href="/#faq">Dúvidas frequentes</a>
+            <Link href="/apresentacao">Modo feira</Link>
           </nav>
           <Link href="/agendamento-online" className={styles.topAction}>Agendamento online <span aria-hidden="true">↗</span></Link>
         </div>

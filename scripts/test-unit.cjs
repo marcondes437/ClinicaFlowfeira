@@ -29,7 +29,7 @@ function carregar(arquivo, env = {}) {
     exports: exportsObj,
     module: { exports: exportsObj },
     process: { env },
-    Intl, Date, URL, AbortSignal, JSON, Math, Number, String, Array, Object, RegExp, Map, Set, Promise, Error,
+    Intl, Date, URL, AbortSignal, TextEncoder, JSON, Math, Number, String, Array, Object, RegExp, Map, Set, Promise, Error,
     console,
     require(nome) {
       if (nome.startsWith("@/")) return carregar(`src/${nome.slice(2)}.ts`, env);
@@ -332,4 +332,26 @@ test("callback local: ignora códigos externos e destinos fornecidos na URL", as
     const result = await exports.GET({ url: "http://localhost/auth/callback?code=externo&next=" + encodeURIComponent(next) });
     assert.equal(result.location, "http://localhost/portal-paciente?erro=local");
   }
+});
+
+test('calendário: exporta a consulta em UTC e escapa conteúdo sem inventar duração', () => {
+  const { calendarioConsulta } = carregar('src/lib/calendario.ts');
+  const value = calendarioConsulta({ id: 'abc-123', data_hora: '2026-11-26T08:30:00-03:00', especialidade: 'Clínica Geral\nBEGIN:VEVENT', profissional: 'Dra. Ágata; Silva', local: 'Unidade Centro, São Paulo' }, new Date('2026-11-25T12:00:00Z'));
+  assert(value.includes('DTSTART:20261126T113000Z\r\n'));
+  assert(value.includes('DTSTAMP:20261125T120000Z\r\n'));
+  assert(value.includes('SUMMARY:Consulta de Clínica Geral\\nBEGIN:VEVENT'));
+  assert(value.includes('Dra. Ágata\\; Silva'));
+  assert(value.includes('Unidade Centro\\, São Paulo'));
+  assert.equal(value.split('\r\n').filter(line => line === 'BEGIN:VEVENT').length, 1);
+  assert.equal(value.includes('DTEND:'), false);
+});
+
+test('calendário: preserva acentos nas linhas longas e recusa datas e IDs inválidos', () => {
+  const { calendarioConsulta } = carregar('src/lib/calendario.ts');
+  const event = { id: 'abc-123', data_hora: '2026-11-26T11:00:00Z', especialidade: 'Clínica '.repeat(30), profissional: 'Dra. Ana', local: 'São Paulo' };
+  const value = calendarioConsulta(event);
+  for (const line of value.split('\r\n')) assert(Buffer.byteLength(line, 'utf8') <= 75);
+  assert(value.replace(/\r\n /g, '').includes('SUMMARY:Consulta de ' + event.especialidade));
+  assert.throws(() => calendarioConsulta({ ...event, data_hora: 'inválida' }));
+  assert.throws(() => calendarioConsulta({ ...event, id: 'id\nSUMMARY:outro' }));
 });

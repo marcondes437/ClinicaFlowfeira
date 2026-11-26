@@ -16,7 +16,7 @@ export default function PatientPortal({
   accessLink = { href: "/cadastro", label: "Me cadastrar" },
 }: PatientPortalProps) {
   return <div className={styles.page}>
-    <header className={styles.header}>
+    <header className={`cx-glass-header ${styles.header}`}>
       <Link href="/" className={styles.brand} aria-label="ClinicaFlow — página inicial">
         <img src="/fotos/logo-transparente.png" alt="" width="60" height="60" />
         <span>ClinicaFlow<small>Seu cuidado, sempre perto</small></span>

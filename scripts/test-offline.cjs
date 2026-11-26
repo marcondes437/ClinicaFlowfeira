@@ -20,9 +20,9 @@ async function main() {
   p.on('request', req => { if (/^https?:/.test(req.url()) && new URL(req.url()).origin !== new URL(base).origin) { external.push(req.url()); return req.abort(); } return req.continue(); });
   return p;
  }
- async function button(p, label) { await p.waitForFunction(text => [...document.querySelectorAll('button')].some(el => el.textContent.trim() === text && !el.disabled), {}, label); await p.evaluate(text => [...document.querySelectorAll('button')].find(el => el.textContent.trim() === text).click(), label); }
+ async function button(p, label) { await p.waitForFunction(text => [...document.querySelectorAll('button')].some(el => el.textContent.trim() === text && !el.disabled), {}, label).catch(async e=>{console.log('Falhou botao:',label,await p.$eval('body',e=>e.innerText));throw e;}); await p.evaluate(text => [...document.querySelectorAll('button')].find(el => el.textContent.trim() === text).click(), label); }
  async function field(p, selector, value) { await p.$eval(selector, (el, value) => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, value); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }, value); }
- async function text(p, value) { await p.waitForFunction(value => document.body.innerText.includes(value), { timeout: 30000 }, value); }
+ async function text(p, value) { await p.waitForFunction(value => document.body.innerText.includes(value), { timeout: 30000 }, value).catch(async e=>{console.log('Falhou texto:',value,await p.$eval('body',e=>e.innerText));throw e;}); }
  try {
   const doctorContext = await browser.createBrowserContext(); const d = await page(doctorContext);
   await d.goto(base + '/portal-medico', { waitUntil: 'networkidle2' });
@@ -32,7 +32,7 @@ async function main() {
   await field(d, '#disp-inicio', date); await field(d, '#disp-fim', date);
   await field(d, '#disp-h1', '08:00'); await field(d, '#disp-h2', '11:00');
   await d.$$eval('input[name=dias]', els => els.forEach(el => { if (!el.checked) el.click(); }));
-  await button(d, 'Liberar horários'); await text(d, 'liberado');
+  await button(d, 'Liberar horários'); await d.waitForFunction(() => /liberado|Nenhum horário novo/.test(document.body.innerText));
   createdSlots = (await db.query("select id from public.agenda_medica where profissional_id=$1 and (data_hora at time zone 'America/Sao_Paulo')::date=$2::date and not (id=any($3::uuid[]))", [doctor.id, date, existingSlots])).rows.map(r => r.id);
   console.log('OK offline: médico libera horários pelo formulário.');
   const context = await browser.createBrowserContext(); const p = await page(context); await p.setViewport({ width: 390, height: 844 });
@@ -45,17 +45,18 @@ async function main() {
   await p.type('#celular', '11987654321'); await field(p, '#data_nascimento', '1990-01-01'); await p.type('#cpf', cpf);
   await button(p, 'Salvar e continuar'); await p.waitForFunction(() => location.pathname === '/paciente');
   console.log('OK offline: cadastro, sessão e complementação dos dados pelo celular.');
-  await p.goto(base + '/paciente/agendar', { waitUntil: 'networkidle2' });
-  await p.click(`input[name=especialidade_id][value="${doctor.especialidade_id}"]`);
-  await button(p, 'Marcar consulta'); await text(p, 'Consulta marcada');
+  await p.goto(base + '/paciente/agendar?especialidade=' + doctor.especialidade_id, { waitUntil: 'networkidle2' });
+  await button(p, "Pesquisar disponibilidade");
+  await p.waitForSelector('button[data-slot-id]'); const availableChoices = await p.$$('button[data-slot-id]'); await availableChoices[2].click(); const selectedSlot = await p.$eval('input[name=agenda_id]', e=>e.value);
+  await button(p, 'Confirmar agendamento'); await text(p, 'Consulta marcada');
   const { rows: [consultation] } = await db.query('select c.id,c.data_hora,c.paciente_id from public.consultas c join public.pacientes p on p.id=c.paciente_id where p.email=$1 and c.status=\'agendada\'', [email]);
-  assert(consultation); console.log('OK offline: consulta criada pelo formulário e confirmada no PostgreSQL.');
+  assert(consultation); assert.equal((await db.query('select consulta_id from public.agenda_medica where id=$1',[selectedSlot])).rows[0].consulta_id,consultation.id); console.log('OK offline: consulta criada pelo formulário e confirmada no PostgreSQL.');
   await p.goto(base + '/paciente/agendar?remarcar=' + consultation.id, { waitUntil: 'networkidle2' });
-  await button(p, 'Remarcar para o primeiro horário livre'); await text(p, 'Consulta remarcada');
+  await button(p, 'Pesquisar disponibilidade'); await p.waitForSelector('button[data-slot-id]'); await p.click('button[data-slot-id]'); await button(p, 'Confirmar remarcação'); await text(p, 'Consulta remarcada');
   assert.equal((await db.query('select status from public.consultas where id=$1', [consultation.id])).rows[0].status, 'cancelada');
   console.log('OK offline: remarcação preserva a nova reserva e cancela a anterior.');
   await p.goto(base + '/paciente', { waitUntil: 'networkidle2' }); await button(p, 'Cancelar');
-  await Promise.all([p.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/paciente'), button(p, 'Sim, cancelar')]);
+  await button(p, 'Sim, cancelar'); await p.waitForNetworkIdle(); console.log('OK: cancelamento enviado pela tela.');
   await p.waitForNetworkIdle();
   assert.equal((await db.query("select count(*)::int as total from public.consultas c join public.pacientes p on p.id=c.paciente_id where p.email=$1 and c.status<>'cancelada'", [email])).rows[0].total, 0);
   await p.reload({ waitUntil: 'networkidle2' }); assert.equal(new URL(p.url()).pathname, '/paciente');

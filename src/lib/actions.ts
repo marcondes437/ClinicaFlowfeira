@@ -366,6 +366,7 @@ type Preferencias = {
   aPartirDe: string | null;
   pacienteId: string | null;
   remarcarId: string | null;
+  profissionalId: string | null;
 };
 
 function lerPreferencias(formData: FormData): Preferencias | { erro: string } {
@@ -381,7 +382,9 @@ function lerPreferencias(formData: FormData): Preferencias | { erro: string } {
   if (pacienteId && !uuidValido(pacienteId)) return { erro: "Paciente inválido." };
   const remarcarId = str(formData, "remarcar_consulta_id");
   if (remarcarId && !uuidValido(remarcarId)) return { erro: "Consulta inválida." };
-  return { especialidadeId, unidadeId, periodo, aPartirDe, pacienteId, remarcarId };
+  const profissionalId = str(formData, "profissional_id");
+  if (profissionalId && !uuidValido(profissionalId)) return { erro: "Profissional inválido." };
+  return { especialidadeId, unidadeId, periodo, aPartirDe, pacienteId, remarcarId, profissionalId };
 }
 
 /**
@@ -395,8 +398,12 @@ export async function agendarConsulta(_prev: EstadoAgendamento, formData: FormDa
   const motivo = str(formData, "motivo");
   if (motivo && motivo.length > 200) return { erro: "O motivo deve ter até 200 caracteres." };
 
+  const agendaId = str(formData, "agenda_id");
+  if (agendaId && !uuidValido(agendaId)) return { erro: "Horário inválido." };
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("agendar_por_especialidade", {
+  const { data, error } = await supabase.rpc("agendar_horario_escolhido", {
+    _agenda_id: agendaId,
+    _profissional_id: pref.profissionalId,
     _especialidade_id: pref.especialidadeId,
     _unidade_id: pref.unidadeId,
     _periodo: pref.periodo,
@@ -451,7 +458,7 @@ export async function agendarConsulta(_prev: EstadoAgendamento, formData: FormDa
 
 export type PreviaVaga = { data_hora: string; unidade: string } | null;
 
-/** Primeiro horário que o sistema atribuiria — calculado no banco, sem revelar o médico. */
+/** Primeiro horário que o sistema atribuiria — calculado no banco com as preferências informadas. */
 export async function previsualizarVaga(dados: {
   especialidadeId: string;
   unidadeId?: string | null;
@@ -459,7 +466,9 @@ export async function previsualizarVaga(dados: {
   aPartirDe?: string | null;
   pacienteId?: string | null;
   remarcarId?: string | null;
+  profissionalId?: string | null;
 }): Promise<{ previa: PreviaVaga; erro?: string }> {
+  if (dados.profissionalId && !uuidValido(dados.profissionalId)) return { previa: null, erro: "Profissional inválido." };
   if (!uuidValido(dados.especialidadeId)) return { previa: null, erro: "Escolha a especialidade." };
   if (dados.unidadeId && !uuidValido(dados.unidadeId)) return { previa: null, erro: "Unidade inválida." };
   if (dados.periodo && !periodoValido(dados.periodo)) return { previa: null, erro: "Período inválido." };
@@ -468,7 +477,8 @@ export async function previsualizarVaga(dados: {
   if (dados.remarcarId && !uuidValido(dados.remarcarId)) return { previa: null, erro: "Consulta inválida." };
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("previsualizar_vaga", {
+  const { data, error } = await supabase.rpc("previsualizar_com_preferencia", {
+    _profissional_id: dados.profissionalId || null,
     _especialidade_id: dados.especialidadeId,
     _unidade_id: dados.unidadeId || null,
     _periodo: dados.periodo || null,
@@ -479,6 +489,39 @@ export async function previsualizarVaga(dados: {
   if (error) return { previa: null, erro: mensagemBanco(error, "Não foi possível consultar a agenda agora.") };
   const linha = (data as Array<{ data_hora: string; unidade_nome: string }> | null)?.[0];
   return { previa: linha ? { data_hora: linha.data_hora, unidade: linha.unidade_nome } : null };
+}
+
+export type HorarioDisponivel = { agenda_id: string; data_hora: string; unidade_id: string; unidade: string; endereco: string | null; profissional: string; duracao: number };
+
+export async function buscarHorarios(dados: {
+  especialidadeId: string;
+  unidadeId?: string | null;
+  periodo?: string | null;
+  aPartirDe?: string | null;
+  pacienteId?: string | null;
+  remarcarId?: string | null;
+  profissionalId?: string | null;
+}): Promise<{ horarios: HorarioDisponivel[]; erro?: string }> {
+  if (dados.profissionalId && !uuidValido(dados.profissionalId)) return { horarios: [], erro: "Profissional inválido." };
+  if (!uuidValido(dados.especialidadeId)) return { horarios: [], erro: "Escolha a especialidade." };
+  if (dados.unidadeId && !uuidValido(dados.unidadeId)) return { horarios: [], erro: "Unidade inválida." };
+  if (dados.periodo && !periodoValido(dados.periodo)) return { horarios: [], erro: "Período inválido." };
+  if (dados.aPartirDe && !dataIsoValida(dados.aPartirDe)) return { horarios: [], erro: "Data inválida." };
+  if (dados.pacienteId && !uuidValido(dados.pacienteId)) return { horarios: [], erro: "Paciente inválido." };
+  if (dados.remarcarId && !uuidValido(dados.remarcarId)) return { horarios: [], erro: "Consulta inválida." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("buscar_horarios", {
+    _profissional_id: dados.profissionalId || null,
+    _especialidade_id: dados.especialidadeId,
+    _unidade_id: dados.unidadeId || null,
+    _periodo: dados.periodo || null,
+    _a_partir_de: dados.aPartirDe || null,
+    _paciente_id: dados.pacienteId || null,
+    _remarcar_consulta_id: dados.remarcarId || null,
+  });
+  if (error) return { horarios: [], erro: mensagemBanco(error, "Não foi possível consultar a agenda agora.") };
+  return { horarios: (data ?? []) as HorarioDisponivel[] };
 }
 
 export async function cancelarConsulta(_prev: EstadoForm, formData: FormData): Promise<EstadoForm> {
@@ -630,6 +673,11 @@ export async function registrarEvolucao(_prev: EstadoForm, formData: FormData): 
   if (descricao.length > 5000) return { erro: "Texto muito longo (máximo de 5.000 caracteres)." };
 
   const supabase = await createClient();
+  if (consultaId) {
+    const { data: consulta, error: erroConsulta } = await supabase.from("consultas")
+      .select("id").eq("id", consultaId).eq("paciente_id", pacienteId).maybeSingle();
+    if (erroConsulta || !consulta) return { erro: "O atendimento selecionado não pertence a este paciente ou não está disponível para seu acesso." };
+  }
   const { error } = await supabase.from("evolucoes").insert({
     paciente_id: pacienteId,
     consulta_id: consultaId,

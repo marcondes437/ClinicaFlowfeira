@@ -1,0 +1,14 @@
+.intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 27px; }
+.intro > div > span { font-size: 10px; font-weight: 750; letter-spacing: .16em; color: #5d757e; }
+.intro h2 { font-size: clamp(28px, 3.2vw, 42px); letter-spacing: -.055em; line-height: 1.13; margin: 11px 0; color: #06303a; }
+.intro h2 em { font-family: inherit; font-style: normal; font-weight: 650; color: #5d757e; }
+.intro p { max-width: 540px; font-size: 13px; line-height: 1.8; color: #5d757e; margin: 0; }
+.intro a { color: #0b5566; display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.intro a:hover { text-decoration: underline; }
+.guide { display: flex; gap: 28px; align-items: center; padding: 18px 0 24px; margin-bottom: 25px; border-bottom: 1px solid #eaf7f8; }
+.guide > span { display: inline-flex; align-items: center; gap: 9px; color: #5d757e; font-size: 11px; }
+.guide b { display: grid; place-items: center; width: 24px; height: 24px; background: #f6fafb; border: 1px solid #eaf7f8; color: #5d757e; border-radius: 50%; font-size: 10px; }
+.surface { border: 1px solid #dfe9ec; background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 8px 35px #203e3404; }
+@media (max-width: 640px) { .intro { flex-wrap: wrap; gap: 5px; }.intro h2 { font-size: 32px; }.surface { padding: 20px 16px; border-radius: 10px; }.guide { gap: 12px; justify-content: space-between; align-items: flex-start; }.guide > span { flex: 1; flex-direction: column; align-items: flex-start; font-size: 10px; line-height: 1.5; } }
+
+.bookingPage { max-width:760px;margin:0 auto 40px; }.topline {display:flex;justify-content:space-between;align-items:center;gap:16px;margin:0 0 20px;}.topline a {font-size:12px;color:#0b5566;padding:8px 0;}.topline span {font-size:9px;color:#5d757e;letter-spacing:.1em;}.bookingPage .surface {padding:36px 45px;border-radius:8px;box-shadow:0 4px 24px #06303a04;}@media(max-width:640px){.bookingPage .surface{padding:24px 16px;}.topline{flex-wrap:wrap;gap:4px;}.topline span{font-size:8px;}}

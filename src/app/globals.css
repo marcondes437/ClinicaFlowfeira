@@ -141,3 +141,21 @@ p { line-height: 1.65; }
 :focus-visible { outline: 2px solid var(--cx-teal-500); outline-offset: 2px; }
 .cx-hide-desktop { display: none; }
 @media (max-width: 640px) { .cx-hide-desktop { display: inline; } }
+
+/* Shared translucent navigation surface. Text and controls stay fully opaque. */
+.cx-glass-header {
+  position: sticky !important;
+  top: 0;
+  z-index: 30;
+  background: #fff !important;
+  border-bottom-color: rgb(11 85 102 / 12%);
+  box-shadow: 0 1px 0 rgb(11 85 102 / 6%);
+}
+.cx-glass-header [data-glass-layer] { background: transparent; }
+@supports ((backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px))) {
+  .cx-glass-header {
+    background: rgb(255 255 255 / 80%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    backdrop-filter: blur(14px) saturate(125%);
+  }
+}

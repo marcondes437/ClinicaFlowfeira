@@ -5,6 +5,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { prepararAgendaDemo } from './local-demo-agenda.mjs';
+import { serverStatus } from './local-server-status.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dir = path.join(root, '.local');
@@ -74,15 +76,34 @@ async function setup() {
         await db.query('commit');
       } catch (e) { await db.query('rollback'); throw e; }
     }
+    if (config.demoAgenda !== false) {
+      const demo = await prepararAgendaDemo(db);
+      console.log(`Agenda de demonstração: ${demo.especialidades} especialidades; ${demo.horarios} horários novos nos próximos 30 dias.`);
+    }
     console.log('PostgreSQL local pronto em 127.0.0.1:' + config.port);
   } finally { await db.end(); }
 }
 let stopping = false;
 async function stop(code = 0) { if (stopping) return; stopping = true; clearInterval(keepAlive); if (child && child.exitCode === null) child.kill(); if (ownsCluster) await cluster.stop(); process.exitCode = code; }
 process.on('SIGINT', () => void stop()); process.on('SIGTERM', () => void stop());
-try {
-  await setup();
+async function run() {
   const mode = process.argv[2] || 'serve';
+  if (mode === 'dev' || mode === 'start') {
+    const status = await serverStatus();
+    if (status === 'clinicaflow') {
+      console.log('O ClinicaFlow já está em execução.');
+      console.log('Abra no navegador: http://127.0.0.1:3000');
+      console.log('Para reiniciar, encerre o terminal da instância atual com Ctrl+C e execute novamente.');
+      return;
+    }
+    if (status === 'occupied') {
+      console.error('A porta 3000 já está sendo usada por outro programa ou por um servidor iniciando.');
+      console.error('Confira o terminal já aberto antes de tentar novamente. Nenhum processo foi encerrado.');
+      process.exitCode = 1;
+      return;
+    }
+  }
+  await setup();
   if (mode === 'setup') await stop();
   else if (mode === 'dev' || mode === 'start') {
     child = spawn(process.execPath, [path.join(root, 'node_modules', 'next', 'dist', 'bin', 'next'), mode, '-H', '127.0.0.1', '-p', '3000'], { cwd: root, stdio: 'inherit', windowsHide: true, env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' } });
@@ -91,4 +112,5 @@ try {
     child = spawn(process.execPath, ['scripts/test-local.cjs'], { cwd: root, stdio: 'inherit', windowsHide: true });
     child.on('exit', code => void stop(code ?? 1));
   } else { console.log('Mantenha este terminal aberto. Ctrl+C encerra o banco.'); keepAlive = setInterval(() => {}, 60000); }
-} catch (e) { console.error(e); await stop(1); }
+}
+try { await run(); } catch (e) { console.error(e); await stop(1); }

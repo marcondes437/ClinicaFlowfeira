@@ -37,12 +37,14 @@ São contas acadêmicas com dados de demonstração. Cadastros feitos pela tela 
 ## Preparar a apresentação
 
 1. Entre como administrador e confira especialidades, unidades e profissionais.
-2. Abra Agenda e consultas e libere horários futuros para o Médico Demonstração. Sem horários liberados não há vagas para marcar.
+2. A inicialização prepara profissionais fictícios e vagas para todas as especialidades ativas, nos dias úteis dos próximos 30 dias (segunda a sexta, 8h–17h, com intervalo 12h–13h). A janela cobre os próximos 30 dias corridos e é renovada a cada início, sem duplicar vagas nem alterar consultas existentes. Você também pode liberar horários manualmente em Agenda e consultas.
 3. Cadastre um paciente ou entre na conta de demonstração.
 4. Complete celular, data de nascimento e CPF válido nos Meus dados. Use somente dados sintéticos na apresentação.
 5. Agende por especialidade, consulte o painel e teste remarcar/cancelar.
 
 Nenhum dado do Supabase remoto foi importado. Este é um banco novo, separado, com as tabelas e regras do projeto e dados iniciais de demonstração.
+
+A agenda automática é exclusiva da demonstração acadêmica. Para desativar a criação de novas vagas, adicione `"demoAgenda": false` em `.local/database.json`. Isso mantém os profissionais, as vagas e as consultas já existentes; novas agendas passam a ser liberadas manualmente pela equipe. Profissionais inativados e bloqueios são respeitados.
 
 ## Onde ficam os dados
 
@@ -101,8 +103,18 @@ Leve a pasta completa, incluindo os arquivos ocultos `.local`, `.next` e `node_m
 
 ## Recursos com internet
 
+No painel do paciente, consultas futuras podem ser baixadas em um arquivo `.ics` pelo botão **Adicionar ao calendário**. O arquivo é gerado localmente; abra-o no aplicativo de calendário de sua preferência. A lista **Tudo pronto para ir?** permite conferir os itens para a visita e mantém a seleção somente enquanto a página estiver aberta.
+
 Google Login foi removido do fluxo local; recuperação por e-mail está indisponível. A Clara responde localmente em modo básico. Tarefas ficam no banco local. Mapas e WhatsApp são links externos opcionais e exigem conexão quando abertos. Imagens e demais recursos carregados automaticamente são locais.
 
 OpenAI e Trello só podem ser ativados explicitamente com `ALLOW_ONLINE_INTEGRATIONS=true` e suas respectivas credenciais. Isso não é necessário para usar ou apresentar o sistema.
 
 Referência do PostgreSQL embarcado: https://github.com/leinelissen/embedded-postgres.
+
+## Apresenta??o autom?tica para a feira
+
+Com o site aberto, acesse http://127.0.0.1:3000/apresentacao ou use o atalho **Modo feira** na p?gina inicial. Clique em **Come?ar apresenta??o** e, se quiser, em **Tela cheia**. O ciclo padr?o dura 4 minutos e 30 segundos; tamb?m h? op??es de 4 ou 5 minutos. Ele recome?a sozinho ao terminar.
+
+Use **Pausar**, **Reiniciar**, os bot?es de etapa ou as setas do teclado. A tecla Espa?o pausa e continua. O tempo para quando a aba fica oculta. A narra??o opcional usa somente uma voz local em portugu?s, quando instalada e dispon?vel no navegador; as legendas e o roteiro funcionam sem voz e sem internet.
+
+As imagens s?o capturas reais em `public/apresentacao/`, com dados fict?cios. A exibi??o n?o consulta contas nem grava agendamentos. Para atualizar as capturas depois de mudar o visual, com o site rodando execute `npm run demo:capturar`. Esse comando cria uma conta, profissional e consultas fict?cias tempor?rias, captura as telas e remove esses registros ao final. Em seguida, gere um novo build.
